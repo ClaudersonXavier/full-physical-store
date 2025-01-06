@@ -58,7 +58,7 @@ export class Store {
     @Prop({
         required: [true, "O local deve informar em qual estado está situado."],
         minlength: [3, "O nome do estado tem que ter pelo menos 3 caracteres."],
-        enum: ['PDV, LOJA'] // Só pode ser uma dessas opções
+        enum: ['PDV', 'LOJA'] // Só pode ser uma dessas opções
     })
     type: "string"
   
