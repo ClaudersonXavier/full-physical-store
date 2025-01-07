@@ -3,6 +3,7 @@ import { Store, StoreSchema } from './model/store.schema';
 import { InjectModel, MongooseModule } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateStoreDto } from './dto/createStoreDto';
+import { GoogleApiService } from 'src/utils/googleMapsService';
 
 @Injectable()
 export class StoreService {
@@ -20,6 +21,12 @@ export class StoreService {
 
     async createStore(createStoreDto: CreateStoreDto): Promise<Store>{
         const newStore = new this.storeModel(createStoreDto)
+        newStore.country = 'Brasil'
+        
+        const coordenates = await GoogleApiService.getCordenates(createStoreDto.postalCode)
+        newStore.latitude = coordenates.latitude
+        newStore.longitude = coordenates.longitude  
+              
         return await newStore.save()
     }
 

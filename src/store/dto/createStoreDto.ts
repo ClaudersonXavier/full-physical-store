@@ -1,26 +1,43 @@
+import { IsEmail, IsOptional, IsPostalCode, IsString } from "class-validator"
+
 export class CreateStoreDto{
 
-    storeName: "string"
+    @IsString()
+    storeID: string
 
-    address1: "string"
+    @IsString()
+    storeName: string
 
-    address2: "string"
+    @IsString()
+    address1: string
 
-    address3: "string"
+    @IsOptional()
+    @IsString()
+    address2: string
 
-    city: "string"
+    @IsOptional()
+    @IsString()
+    address3: string
 
-    district:"string"
+    @IsString()
+    city: string
+
+    @IsString()
+    district: string
     
-    state: "string"
+    @IsString()
+    state: string
         
-    type: "string"
+    @IsString()
+    type: string
       
-    country: "string"
-
-    postalCode: "string"
+    @IsString()
+    @IsPostalCode("BR")
+    postalCode: string
     
-    telephoneNumber: "string"
+    @IsString()
+    telephoneNumber: string
      
-    emailAddress: "string"
+    @IsEmail()
+    emailAddress: string
 }

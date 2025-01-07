@@ -3,14 +3,18 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 @Schema()
 export class Store {
 
-    @Prop({required: [true, "O local deve ter um ID."]})
-    storeID: "string"
+    @Prop({
+        required: [true, "O local deve ter um ID."],
+        minlength: [6, "O id deve ter 6 númeors."],
+        maxlength: [6, "O id deve ter 6 númeors."]
+    })
+    storeID: string
 
     @Prop({
         required: [true, "O local deve ter um nome."],
         minlength: [2, "O nome do local deve ter pelo menos 2 caracteres."]
     })
-    storeName: "string"
+    storeName: string
     
     @Prop({default: true}) // considerar que sempre tem o produto
     takeOutInStore: boolean
@@ -19,40 +23,43 @@ export class Store {
     shippingTimeInDays: number
 
     @Prop()
-    latitude: "string"
+    distance: number
 
     @Prop()
-    longitude: "string"
+    latitude: string
+
+    @Prop()
+    longitude: string
 
     @Prop({
         required: [true, "O local deve ter pelo menos um endereço."],
         minlength: [3, "O endereço tem que ter pelo menos 3 caracteres."]
     })
-    address1: "string"
+    address1: string
     
     @Prop()
-    address2: "string"
+    address2: string
 
     @Prop()
-    address3: "string"
+    address3: string
 
     @Prop({
         required: [true, "O local deve informar em que cidade está situado."],
         minlength: [3, "O nome da cidade tem que ter pelo menos 3 caracteres."]
     })
-    city: "string"
+    city: string
 
     @Prop({
         required: [true, "O local deve informar em qual distrito está situado."],
         minlength: [3, "O nome do distrito tem que ter pelo menos 3 caracteres."]
     })
-    district:"string"
+    district: string
 
     @Prop({
         required: [true, "O local deve informar em qual estado está situado."],
         minlength: [3, "O nome do estado tem que ter pelo menos 3 caracteres."]
     })
-    state: "string"
+    state: string
     
 
     @Prop({
@@ -60,32 +67,32 @@ export class Store {
         minlength: [3, "O nome do estado tem que ter pelo menos 3 caracteres."],
         enum: ['PDV', 'LOJA'] // Só pode ser uma dessas opções
     })
-    type: "string"
+    type: string
   
 
     @Prop({
         required: [true, "O local deve informar em qual país está situado."],
         minlength: [3, "O nome do estado tem que ter pelo menos 3 caracteres."]
     })
-    country: "string"
+    country: string
     
 
     @Prop({
         required: [true, "O local deve informar seu CEP."]
     })
-    postalCode: "string"
+    postalCode: string
 
 
     @Prop({
         required: [true, "O local deve informar seu número."]
     })
-    telephoneNumber: "string"
+    telephoneNumber: string
  
 
     @Prop({
         required: [true, "O local deve informar seu email."]
     })
-    emailAddress: "string"
+    emailAddress: string
     
 
 }
