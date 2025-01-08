@@ -27,6 +27,9 @@ export class CreateStoreDto{
     
     @IsString()
     state: string
+
+    @IsString()
+    country: string
         
     @IsString()
     type: string

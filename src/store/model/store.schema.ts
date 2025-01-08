@@ -6,7 +6,8 @@ export class Store {
     @Prop({
         required: [true, "O local deve ter um ID."],
         minlength: [6, "O id deve ter 6 númeors."],
-        maxlength: [6, "O id deve ter 6 númeors."]
+        maxlength: [6, "O id deve ter 6 númeors."],
+        unique: [true, "Já existe um local com esse ID"]
     })
     storeID: string
 
@@ -57,7 +58,8 @@ export class Store {
 
     @Prop({
         required: [true, "O local deve informar em qual estado está situado."],
-        minlength: [3, "O nome do estado tem que ter pelo menos 3 caracteres."]
+        minlength: [2, "Digite a sigla do Estado!"],
+        maxlength: [2, "Digite a sigla do Estado!"]
     })
     state: string
     
@@ -72,7 +74,8 @@ export class Store {
 
     @Prop({
         required: [true, "O local deve informar em qual país está situado."],
-        minlength: [3, "O nome do estado tem que ter pelo menos 3 caracteres."]
+        minlength: [3, "O nome do estado tem que ter pelo menos 3 caracteres."],
+        default: "Brasil"
     })
     country: string
     
