@@ -1,8 +1,8 @@
-import { IsEmail, IsOptional, IsPostalCode, IsString } from "class-validator"
+import { IsEmail, IsNumberString, IsOptional, IsPhoneNumber, IsPostalCode, IsString } from "class-validator"
 
 export class CreateStoreDto{
 
-    @IsString()
+    @IsNumberString()
     storeID: string
 
     @IsString()
@@ -39,6 +39,7 @@ export class CreateStoreDto{
     postalCode: string
     
     @IsString()
+    @IsPhoneNumber('BR')
     telephoneNumber: string
      
     @IsEmail()

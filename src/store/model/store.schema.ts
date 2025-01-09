@@ -24,9 +24,6 @@ export class Store {
     shippingTimeInDays: number
 
     @Prop()
-    distance: number
-
-    @Prop()
     latitude: string
 
     @Prop()
