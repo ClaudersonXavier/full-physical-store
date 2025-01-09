@@ -7,6 +7,7 @@ import { GoogleApiService } from 'src/utils/googleMapsService';
 import { CreateStoreByCepDto } from './dto/createStoreByCepDto';
 import { cepInfos } from 'src/utils/viaCepService';
 import { UpdateStoreDto } from './dto/updateStoreDto';
+import { calcularFrete } from 'src/utils/correiosService';
 
 @Injectable()
 export class StoreService {
@@ -14,9 +15,11 @@ export class StoreService {
         @InjectModel('Store') private storeModel: Model<Store>
     ){}
 
+
     async listAll(): Promise<Store[]> {
         return await this.storeModel.find()
     }
+
 
     async storeById(id: string): Promise<Store>{
 
@@ -28,43 +31,99 @@ export class StoreService {
         
     }
 
+
     async storeByState(state: string): Promise<Store[]> {
         return this.storeModel.find({state: state})
     }
 
+
     async storeByCep(cep: string){
 
-        try{
-           
-            const userLocation = await GoogleApiService.getCordenates(cep);
-            const stores = await this.storeModel.find(); // Busca as lojas no banco de dados.
-            const nearbyStores = [];
-
-            console.log(userLocation)
-
-            for (const store of stores) {
-                const distancia = await GoogleApiService.distanceCalculator(
-                    userLocation.latitude,
-                    userLocation.longitude,
-                    store.latitude,
-                    store.longitude
-                );
-
-                if (distancia <= 50) {
-                    const storeWithDistance = {
-                        ...store.toObject(),
-                        distancia,
-                    };
-                    nearbyStores.push(storeWithDistance);
-                }
+        const userLocation = await GoogleApiService.getCordenates(cep);
+            
+        const stores = await this.storeModel.find();
+            
+        const nearbyStores = [];
+        const pins = [];
+            
+        for (const store of stores) {
+                    
+            const distance = await GoogleApiService.distanceCalculator(
+                userLocation.latitude,
+                userLocation.longitude,
+                store.latitude,
+                store.longitude
+            );
+            
+                   
+            if (distance <= 50) {
+                     
+                nearbyStores.push({
+                    name: store.storeName,
+                    city: store.city,
+                    postalCode: store.postalCode,
+                    type: store.type,
+                    distance: `${distance.toFixed(2)} km`,
+                    value: [{
+                        prazo: "1 dia útil",
+                        price: "R$ 15,00",
+                        description: "Motoboy",
+                      }]
+                    });
+            
+                pins.push({
+                    position: {
+                        lat: store.latitude,
+                        lng: store.longitude,
+                    },
+                    title: store.storeName,
+                });
             }
-     
-            return nearbyStores;
-        }catch(error){
-             
-             throw new Error(error);
+            else if (store.type === 'LOJA' && distance >= 50) {
+                console.log(cep)
+                console.log(store.postalCode)        
+                const correiosResponse = await calcularFrete(
+                    cep,
+                    store.postalCode
+                );
+                nearbyStores.push({
+                    name: store.storeName,
+                    city: store.city,
+                    postalCode: store.postalCode,
+                    type: "LOJA",
+                    distance: `${distance.toFixed(2)} km`,
+                    value: correiosResponse,
+                });
+
+                pins.push({
+                    position: {
+                        lat: store.latitude,
+                        lng: store.longitude,
+                    },
+                    title: store.storeName,
+                });
+            }
+            
+        }
+                    
+                
+        nearbyStores.sort((a, b) => {
+            const distanciaA = parseFloat(a.distance.replace(' km', ''));
+            const distanciaB = parseFloat(b.distance.replace(' km', ''));
+            return distanciaA - distanciaB;
+        });
+                
+        const paginatedStores = nearbyStores.slice(0, 0 + 5)
+            
+        return {
+            limit: 5,
+            offset: 0,
+            total: nearbyStores.length,
+            stores: paginatedStores,
+            pins,
         }
     }
+
 
     async createStore(createStoreDto: CreateStoreDto): Promise<Store>{
         const newStore = new this.storeModel(createStoreDto)
@@ -75,6 +134,7 @@ export class StoreService {
               
         return await newStore.save()
     }
+
 
     async createStoreByCep(createStoreByCepDto: CreateStoreByCepDto): Promise<Store>{
         const newStore = new this.storeModel(createStoreByCepDto)
@@ -93,6 +153,7 @@ export class StoreService {
         return await newStore.save()
     }
 
+
     async deleteStore(id: string){
 
         if(!isNaN(Number(id))){
@@ -101,6 +162,7 @@ export class StoreService {
 
         return await this.storeModel.findByIdAndDelete(id)
     }
+
 
     async updateStore(id: string, updateStoreDto: UpdateStoreDto){
         

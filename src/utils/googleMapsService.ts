@@ -33,20 +33,15 @@ export class GoogleApiService{
 
     static async distanceCalculator(lat1: string, lng1: string, lat2: string, lng2: string){
         
-    
-            const apiKey = process.env.GOOGLE_API_KEY
+        const apiKey = process.env.GOOGLE_API_KEY
 
-            const response = await fetch(`https://maps.googleapis.com/maps/api/distancematrix/json?origins=${lat1},${lng1}&destinations=${lat2},${lng2}&key=${apiKey}`);
+        const response = await fetch(`https://maps.googleapis.com/maps/api/distancematrix/json?origins=${lat1},${lng1}&destinations=${lat2},${lng2}&key=${apiKey}`);
 
-            const data = await response.json()
+        const data = await response.json()
 
-            console.log(data)
-
-            data.rows[0].elements[0].distance['value']
-            return data.rows[0].elements[0].distance['value'] / 1000;
-     
-
+        data.rows[0].elements[0].distance['value']
         
+        return data.rows[0].elements[0].distance['value'] / 1000;
 
     }
 }

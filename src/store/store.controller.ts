@@ -1,7 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
 import { StoreService } from './store.service';
 import { CreateStoreDto } from './dto/createStoreDto';
-import { calcularFrete } from 'src/utils/correiosService';
 import { CreateStoreByCepDto } from './dto/createStoreByCepDto';
 import { UpdateStoreDto } from './dto/updateStoreDto';
 
@@ -13,24 +12,59 @@ export class StoreController {
     //Endpoits requisitados
 
     @Get("/listAll")
-    listALL(){
-       const stores = this.storeService.listAll()
-       return stores
+    async listALL(){
+       const stores = await this.storeService.listAll()
+
+       const response = {
+           limit: stores.length,
+           offset: 0,
+           total: stores.length,
+           stores
+       }
+
+       return response
     }
 
     @Get("/storeById/:id")
-    storeById(@Param('id') id: string){
-        return this.storeService.storeById(id)
+    async storeById(@Param('id') id: string){
+
+       const stores = await this.storeService.storeById(id)
+
+       if(!stores){
+            throw new NotFoundException("Não há local com esse id.")
+       }
+
+       const response = {
+            limit: 1,
+            offset: 0,
+            total: 1,
+            stores
+       }
+
+       return response
+
     }
 
     @Get("/storeByCep/")
-    storeByCep(@Body() cep){
-        return this.storeService.storeByCep(cep.cep)
+    async storeByCep(@Body() cep: {cep: string}){
+
+        const stores = await this.storeService.storeByCep(cep.cep)
+
+        return stores
     }
 
     @Get('/storeByState/:state')
-    storeByState(@Param('state') state: string){
-        return this.storeService.storeByState(state)
+    async storeByState(@Param('state') state: string){
+        const stores = await this.storeService.storeByState(state)
+
+        const response = {
+            limit: stores.length,
+            offset: 0,
+            total: stores.length,
+            stores
+       }
+
+       return response
     }
 
     //Endpoints adicionais
