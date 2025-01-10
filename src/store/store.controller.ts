@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { StoreService } from './store.service';
 import { CreateStoreDto } from './dto/createStoreDto';
 import { CreateStoreByCepDto } from './dto/createStoreByCepDto';
@@ -6,88 +15,82 @@ import { UpdateStoreDto } from './dto/updateStoreDto';
 
 @Controller('store')
 export class StoreController {
+  constructor(private storeService: StoreService) {}
 
-    constructor(private storeService: StoreService){}
+  //Endpoits requisitados
 
-    //Endpoits requisitados
+  @Get('/listAll')
+  async listALL() {
+    const stores = await this.storeService.listAll();
 
-    @Get("/listAll")
-    async listALL(){
-       const stores = await this.storeService.listAll()
+    const response = {
+      limit: stores.length,
+      offset: 0,
+      total: stores.length,
+      stores,
+    };
 
-       const response = {
-           limit: stores.length,
-           offset: 0,
-           total: stores.length,
-           stores
-       }
+    return response;
+  }
 
-       return response
+  @Get('/storeById/:id')
+  async storeById(@Param('id') id: string) {
+    const stores = await this.storeService.storeById(id);
+
+    if (!stores) {
+      throw new NotFoundException('Não há local com esse id.');
     }
 
-    @Get("/storeById/:id")
-    async storeById(@Param('id') id: string){
+    const response = {
+      limit: 1,
+      offset: 0,
+      total: 1,
+      stores,
+    };
 
-       const stores = await this.storeService.storeById(id)
+    return response;
+  }
 
-       if(!stores){
-            throw new NotFoundException("Não há local com esse id.")
-       }
+  @Get('/storeByCep/')
+  async storeByCep(@Body() cep: { cep: string }) {
+    const stores = await this.storeService.storeByCep(cep.cep);
 
-       const response = {
-            limit: 1,
-            offset: 0,
-            total: 1,
-            stores
-       }
+    return stores;
+  }
 
-       return response
+  @Get('/storeByState/:state')
+  async storeByState(@Param('state') state: string) {
+    const stores = await this.storeService.storeByState(state);
 
-    }
+    const response = {
+      limit: stores.length,
+      offset: 0,
+      total: stores.length,
+      stores,
+    };
 
-    @Get("/storeByCep/")
-    async storeByCep(@Body() cep: {cep: string}){
+    return response;
+  }
 
-        const stores = await this.storeService.storeByCep(cep.cep)
+  //Endpoints adicionais
 
-        return stores
-    }
+  @Post('/create')
+  createStore(@Body() createStoreDto: CreateStoreDto) {
+    return this.storeService.createStore(createStoreDto);
+  }
 
-    @Get('/storeByState/:state')
-    async storeByState(@Param('state') state: string){
-        const stores = await this.storeService.storeByState(state)
+  @Post('/createByCep')
+  createStoreByCep(@Body() createStoreByCepDto: CreateStoreByCepDto) {
+    return this.storeService.createStoreByCep(createStoreByCepDto);
+  }
 
-        const response = {
-            limit: stores.length,
-            offset: 0,
-            total: stores.length,
-            stores
-       }
+  @Delete('/delete/:id')
+  deleteStore(@Param('id') id: string) {
+    return this.storeService.deleteStore(id);
+  }
 
-       return response
-    }
-
-    //Endpoints adicionais
-
-    @Post("/create")
-    createStore(@Body() createStoreDto: CreateStoreDto){
-        return this.storeService.createStore(createStoreDto)
-    }
-
-    @Post("/createByCep")
-    createStoreByCep(@Body() createStoreByCepDto: CreateStoreByCepDto){
-        return this.storeService.createStoreByCep(createStoreByCepDto)
-    }
-
-    @Delete("/delete/:id")
-    deleteStore(@Param("id") id: string){
-        return this.storeService.deleteStore(id)
-    }
-
-    @Patch('/updateStore/:id')
-    updateStore(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto){
-        return this.storeService.updateStore(id, updateStoreDto)
-    }
-
-
+  @Patch('/updateStore/:id')
+  updateStore(@Param('id') id: string, @Body() updateStoreDto: UpdateStoreDto) {
+    return this.storeService.updateStore(id, updateStoreDto);
+  }
 }

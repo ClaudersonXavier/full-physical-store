@@ -1,47 +1,59 @@
-import { IsEmail, IsNumberString, IsOptional, IsPhoneNumber, IsPostalCode, IsString } from "class-validator"
+import {
+  IsEmail,
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsPhoneNumber,
+  IsPostalCode,
+  IsString,
+} from 'class-validator';
 
-export class CreateStoreDto{
+export class CreateStoreDto {
+  @IsNumberString()
+  storeID: string;
 
-    @IsNumberString()
-    storeID: string
+  @IsString()
+  storeName: string;
 
-    @IsString()
-    storeName: string
+  @IsNumber()
+  @IsOptional()
+  shippingTimeInDays: number;
 
-    @IsString()
-    address1: string
+  @IsString()
+  address1: string;
 
-    @IsOptional()
-    @IsString()
-    address2: string
+  @IsOptional()
+  @IsString()
+  address2: string;
 
-    @IsOptional()
-    @IsString()
-    address3: string
+  @IsOptional()
+  @IsString()
+  address3: string;
 
-    @IsString()
-    city: string
+  @IsString()
+  city: string;
 
-    @IsString()
-    district: string
-    
-    @IsString()
-    state: string
+  @IsString()
+  district: string;
 
-    @IsString()
-    country: string
-        
-    @IsString()
-    type: string
-      
-    @IsString()
-    @IsPostalCode("BR")
-    postalCode: string
-    
-    @IsString()
-    @IsPhoneNumber('BR')
-    telephoneNumber: string
-     
-    @IsEmail()
-    emailAddress: string
+  @IsString()
+  state: string;
+
+  @IsOptional()
+  @IsString()
+  country: string;
+
+  @IsString()
+  type: string;
+
+  @IsString()
+  @IsPostalCode('BR')
+  postalCode: string;
+
+  @IsString()
+  @IsPhoneNumber('BR')
+  telephoneNumber: string;
+
+  @IsEmail()
+  emailAddress: string;
 }

@@ -1,23 +1,32 @@
-import { IsEmail, IsPostalCode, IsString } from "class-validator"
+import {
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsPostalCode,
+  IsString,
+} from 'class-validator';
 
-export class CreateStoreByCepDto{
+export class CreateStoreByCepDto {
+  @IsString()
+  storeID: string;
 
-    @IsString()
-    storeID: string
+  @IsString()
+  storeName: string;
 
-    @IsString()
-    storeName: string
-        
-    @IsString()
-    type: string
-      
-    @IsString()
-    @IsPostalCode("BR")
-    postalCode: string
-    
-    @IsString()
-    telephoneNumber: string
-     
-    @IsEmail()
-    emailAddress: string
+  @IsNumber()
+  @IsOptional()
+  shippingTimeInDays: number;
+
+  @IsString()
+  type: string;
+
+  @IsString()
+  @IsPostalCode('BR')
+  postalCode: string;
+
+  @IsString()
+  telephoneNumber: string;
+
+  @IsEmail()
+  emailAddress: string;
 }

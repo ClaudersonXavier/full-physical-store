@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Store, StoreSchema } from './model/store.schema';
+import { Store } from './model/store.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateStoreDto } from './dto/createStoreDto';
@@ -7,207 +7,199 @@ import { GoogleApiService } from 'src/utils/googleMapsService';
 import { CreateStoreByCepDto } from './dto/createStoreByCepDto';
 import { cepInfos } from 'src/utils/viaCepService';
 import { UpdateStoreDto } from './dto/updateStoreDto';
-import { calcularFrete } from 'src/utils/correiosService';
+import { calculateShipping } from 'src/utils/correiosService';
 
 @Injectable()
 export class StoreService {
-    constructor(
-        @InjectModel('Store') private storeModel: Model<Store>
-    ){}
+  constructor(@InjectModel('Store') private storeModel: Model<Store>) {}
 
+  async listAll(): Promise<Store[]> {
+    return await this.storeModel.find();
+  }
 
-    async listAll(): Promise<Store[]> {
-        return await this.storeModel.find()
+  async storeById(id: string): Promise<Store> {
+    if (!isNaN(Number(id))) {
+      return await this.storeModel.findOne({ storeID: id });
     }
 
+    return await this.storeModel.findById(id);
+  }
 
-    async storeById(id: string): Promise<Store>{
+  async storeByState(state: string): Promise<Store[]> {
+    return this.storeModel.find({ state: state });
+  }
 
-        if(!isNaN(Number(id))){
-            return await this.storeModel.findOne({storeID: id})
-        }    
-       
-        return await this.storeModel.findById(id)
-        
-    }
+  async storeByCep(cep: string) {
+    const userLocation = await GoogleApiService.getCordenates(cep);
 
+    const stores = await this.storeModel.find();
 
-    async storeByState(state: string): Promise<Store[]> {
-        return this.storeModel.find({state: state})
-    }
+    const nearbyStores = [];
+    const pins = [];
 
+    for (const store of stores) {
+      const distance = await GoogleApiService.distanceCalculator(
+        userLocation.latitude,
+        userLocation.longitude,
+        store.latitude,
+        store.longitude,
+      );
 
-    async storeByCep(cep: string){
-
-        const userLocation = await GoogleApiService.getCordenates(cep);
-            
-        const stores = await this.storeModel.find();
-            
-        const nearbyStores = [];
-        const pins = [];
-            
-        for (const store of stores) {
-                    
-            const distance = await GoogleApiService.distanceCalculator(
-                userLocation.latitude,
-                userLocation.longitude,
-                store.latitude,
-                store.longitude
-            );
-            
-                   
-            if (distance <= 50) {
-                     
-                nearbyStores.push({
-                    name: store.storeName,
-                    city: store.city,
-                    postalCode: store.postalCode,
-                    type: store.type,
-                    distance: `${distance.toFixed(2)} km`,
-                    value: [{
-                        prazo: "1 dia útil",
-                        price: "R$ 15,00",
-                        description: "Motoboy",
-                      }]
-                    });
-            
-                pins.push({
-                    position: {
-                        lat: store.latitude,
-                        lng: store.longitude,
-                    },
-                    title: store.storeName,
-                });
-            }
-            else if (store.type === 'LOJA' && distance >= 50) {
-                console.log(cep)
-                console.log(store.postalCode)        
-                const correiosResponse = await calcularFrete(
-                    cep,
-                    store.postalCode
-                );
-                nearbyStores.push({
-                    name: store.storeName,
-                    city: store.city,
-                    postalCode: store.postalCode,
-                    type: "LOJA",
-                    distance: `${distance.toFixed(2)} km`,
-                    value: correiosResponse,
-                });
-
-                pins.push({
-                    position: {
-                        lat: store.latitude,
-                        lng: store.longitude,
-                    },
-                    title: store.storeName,
-                });
-            }
-            
-        }
-                    
-                
-        nearbyStores.sort((a, b) => {
-            const distanciaA = parseFloat(a.distance.replace(' km', ''));
-            const distanciaB = parseFloat(b.distance.replace(' km', ''));
-            return distanciaA - distanciaB;
+      if (distance <= 50) {
+        nearbyStores.push({
+          name: store.storeName,
+          city: store.city,
+          postalCode: store.postalCode,
+          type: store.type,
+          distance: `${distance.toFixed(2)} km`,
+          value: [
+            {
+              prazo: '1 dia útil',
+              price: 'R$ 15,00',
+              description: 'Motoboy',
+            },
+          ],
         });
-                
-        const paginatedStores = nearbyStores.slice(0, 0 + 5)
-            
-        return {
-            limit: 5,
-            offset: 0,
-            total: nearbyStores.length,
-            stores: paginatedStores,
-            pins,
-        }
+
+        pins.push({
+          position: {
+            lat: store.latitude,
+            lng: store.longitude,
+          },
+          title: store.storeName,
+        });
+      } else if (store.type === 'LOJA' && distance >= 50) {
+        const correiosResponse = await calculateShipping(cep, store.postalCode);
+        nearbyStores.push({
+          name: store.storeName,
+          city: store.city,
+          postalCode: store.postalCode,
+          type: 'LOJA',
+          distance: `${distance.toFixed(2)} km`,
+          value: correiosResponse,
+        });
+
+        pins.push({
+          position: {
+            lat: store.latitude,
+            lng: store.longitude,
+          },
+          title: store.storeName,
+        });
+      }
     }
 
+    nearbyStores.sort((a, b) => {
+      const distanceA = parseFloat(a.distance.replace(' km', ''));
+      const distanceB = parseFloat(b.distance.replace(' km', ''));
+      return distanceA - distanceB;
+    });
 
-    async createStore(createStoreDto: CreateStoreDto): Promise<Store>{
-        const newStore = new this.storeModel(createStoreDto)
-        
-        const coordenates = await GoogleApiService.getCordenates(createStoreDto.postalCode)
-        newStore.latitude = coordenates.latitude
-        newStore.longitude = coordenates.longitude  
-              
-        return await newStore.save()
+    const paginatedStores = nearbyStores.slice(0, 0 + 5);
+
+    return {
+      limit: 5,
+      offset: 0,
+      total: nearbyStores.length,
+      stores: paginatedStores,
+      pins,
+    };
+  }
+
+  async createStore(createStoreDto: CreateStoreDto): Promise<Store> {
+    const newStore = new this.storeModel(createStoreDto);
+
+    const coordenates = await GoogleApiService.getCordenates(
+      createStoreDto.postalCode,
+    );
+    newStore.latitude = coordenates.latitude;
+    newStore.longitude = coordenates.longitude;
+
+    return await newStore.save();
+  }
+
+  async createStoreByCep(
+    createStoreByCepDto: CreateStoreByCepDto,
+  ): Promise<Store> {
+    const newStore = new this.storeModel(createStoreByCepDto);
+    const data = await cepInfos(createStoreByCepDto.postalCode);
+
+    newStore.address1 = data.logradouro;
+    newStore.city = data.localidade;
+    newStore.district = data.bairro;
+    newStore.state = data.uf;
+
+    const coordenates = await GoogleApiService.getCordenates(
+      createStoreByCepDto.postalCode,
+    );
+
+    newStore.latitude = coordenates.latitude;
+    newStore.longitude = coordenates.longitude;
+
+    return await newStore.save();
+  }
+
+  async deleteStore(id: string) {
+    if (!isNaN(Number(id))) {
+      return await this.storeModel.findOneAndDelete({ storeID: id });
     }
 
+    return await this.storeModel.findByIdAndDelete(id);
+  }
 
-    async createStoreByCep(createStoreByCepDto: CreateStoreByCepDto): Promise<Store>{
-        const newStore = new this.storeModel(createStoreByCepDto)
-        const data = await cepInfos(createStoreByCepDto.postalCode)
+  async updateStore(id: string, updateStoreDto: UpdateStoreDto) {
+    if (!isNaN(Number(id))) {
+      const updatedStore = await this.storeModel.findOneAndUpdate(
+        { storeID: id },
+        updateStoreDto,
+        {
+          new: true,
+          runValidators: true,
+        },
+      );
 
-        newStore.address1 = data.logradouro
-        newStore.city = data.localidade
-        newStore.district = data.bairro
-        newStore.state = data.uf
+      if (updateStoreDto.postalCode) {
+        const data = await cepInfos(updateStoreDto.postalCode);
+        updatedStore.address1 = data.logradouro;
+        updatedStore.city = data.localidade;
+        updatedStore.district = data.bairro;
+        updatedStore.state = data.uf;
 
-        const coordenates = await GoogleApiService.getCordenates(createStoreByCepDto.postalCode)
+        const coordenates = await GoogleApiService.getCordenates(
+          updateStoreDto.postalCode,
+        );
 
-        newStore.latitude = coordenates.latitude
-        newStore.longitude = coordenates.longitude  
-              
-        return await newStore.save()
+        updatedStore.latitude = coordenates.latitude;
+        updatedStore.longitude = coordenates.longitude;
+      }
+
+      return updatedStore;
     }
 
+    const updatedStore = await this.storeModel.findByIdAndUpdate(
+      id,
+      updateStoreDto,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
 
-    async deleteStore(id: string){
+    if (updateStoreDto.postalCode) {
+      const data = await cepInfos(updateStoreDto.postalCode);
+      updatedStore.address1 = data.logradouro;
+      updatedStore.city = data.localidade;
+      updatedStore.district = data.bairro;
+      updatedStore.state = data.uf;
 
-        if(!isNaN(Number(id))){
-            return await this.storeModel.findOne({storeID: id})
-        }  
+      const coordenates = await GoogleApiService.getCordenates(
+        updateStoreDto.postalCode,
+      );
 
-        return await this.storeModel.findByIdAndDelete(id)
+      updatedStore.latitude = coordenates.latitude;
+      updatedStore.longitude = coordenates.longitude;
     }
 
-
-    async updateStore(id: string, updateStoreDto: UpdateStoreDto){
-        
-        if(!isNaN(Number(id))){
-            const updatedStore = await this.storeModel.findOneAndUpdate({storeID: id}, updateStoreDto,{
-                new: true,
-                runValidators: true
-            })
-
-            if(updateStoreDto.postalCode){
-                const data = await cepInfos(updateStoreDto.postalCode)
-                updatedStore.address1 = data.logradouro
-                updatedStore.city = data.localidade
-                updatedStore.district = data.bairro
-                updatedStore.state = data.uf
-
-                const coordenates = await GoogleApiService.getCordenates(updateStoreDto.postalCode)
-
-                updatedStore.latitude = coordenates.latitude
-                updatedStore.longitude = coordenates.longitude 
-            }
-            
-            return updatedStore
-        }
-
-        const updatedStore = await this.storeModel.findByIdAndUpdate(id, updateStoreDto,{
-            new: true,
-            runValidators: true
-        })
-
-        if(updateStoreDto.postalCode){
-            const data = await cepInfos(updateStoreDto.postalCode)
-            updatedStore.address1 = data.logradouro
-            updatedStore.city = data.localidade
-            updatedStore.district = data.bairro
-            updatedStore.state = data.uf
-
-            const coordenates = await GoogleApiService.getCordenates(updateStoreDto.postalCode)
-
-            updatedStore.latitude = coordenates.latitude
-            updatedStore.longitude = coordenates.longitude 
-        }
-        
-        return updatedStore
-    }
-
-
+    return updatedStore;
+  }
 }

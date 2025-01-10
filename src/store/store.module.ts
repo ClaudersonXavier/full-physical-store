@@ -7,13 +7,15 @@ import { StoreService } from './store.service';
 
 @Module({
   controllers: [StoreController],
-  imports : [
+  imports: [
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.DATABASE),
-    MongooseModule.forFeature([{
-      name: 'Store',
-      schema: StoreSchema,
-    }]),
+    MongooseModule.forFeature([
+      {
+        name: 'Store',
+        schema: StoreSchema,
+      },
+    ]),
   ],
   providers: [StoreService],
 })
