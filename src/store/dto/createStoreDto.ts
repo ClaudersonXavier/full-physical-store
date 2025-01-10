@@ -9,14 +9,16 @@ import {
 } from 'class-validator';
 
 export class CreateStoreDto {
+
+  
   @IsNumberString()
   storeID: string;
 
   @IsString()
   storeName: string;
 
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   shippingTimeInDays: number;
 
   @IsString()
@@ -50,10 +52,12 @@ export class CreateStoreDto {
   @IsPostalCode('BR')
   postalCode: string;
 
+  @IsOptional()
   @IsString()
   @IsPhoneNumber('BR')
   telephoneNumber: string;
 
+  @IsOptional()
   @IsEmail()
   emailAddress: string;
 }

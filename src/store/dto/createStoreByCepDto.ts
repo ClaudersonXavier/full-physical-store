@@ -1,20 +1,23 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNumber,
   IsOptional,
+  IsPhoneNumber,
   IsPostalCode,
   IsString,
 } from 'class-validator';
 
 export class CreateStoreByCepDto {
+  
   @IsString()
   storeID: string;
 
   @IsString()
   storeName: string;
 
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   shippingTimeInDays: number;
 
   @IsString()
@@ -24,9 +27,12 @@ export class CreateStoreByCepDto {
   @IsPostalCode('BR')
   postalCode: string;
 
+  @IsOptional()
   @IsString()
+  @IsPhoneNumber('BR')
   telephoneNumber: string;
 
+  @IsOptional()
   @IsEmail()
   emailAddress: string;
 }

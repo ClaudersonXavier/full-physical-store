@@ -13,7 +13,9 @@ import { StoreService } from './store.service';
 import { CreateStoreDto } from './dto/createStoreDto';
 import { CreateStoreByCepDto } from './dto/createStoreByCepDto';
 import { UpdateStoreDto } from './dto/updateStoreDto';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('stores')
 @Controller('store')
 export class StoreController {
   constructor(private storeService: StoreService) {}
@@ -21,6 +23,11 @@ export class StoreController {
   //Endpoits requisitados
 
   @Get('/listAll')
+  @ApiOperation({ summary: 'Lista todas as lojas' })  
+  @ApiQuery({name: 'limit', required: false, type: Number, description: 'Número máximo de lojas a serem retornadas'})
+  @ApiQuery({name: 'offset', required: false, type: Number, description: 'Número de páginas a serem puladas'})
+  @ApiResponse({status: 200, description: 'Lista de lojas retornada com sucesso',})
+  @ApiResponse({status: 404,description: 'Não há lojas cadastradas',})
   async listALL(
     @Query('limit') limit: number = 10,
     @Query('offset') offset: number = 0,
@@ -48,6 +55,10 @@ export class StoreController {
   }
 
   @Get('/storeById/:id')
+  @ApiOperation({ summary: 'Busca uma loja por ID' })
+  @ApiParam({ name: 'id', type: String, description: 'ID da loja, tanto o dado pelo usuário como o do banco de dados funcionam' }) 
+  @ApiResponse({ status: 200, description: 'Loja encontrada com sucesso' })
+  @ApiResponse({ status: 404, description: 'Loja não encontrada' })
   async storeById(@Param('id') id: string) {
     const stores = await this.storeService.storeById(id);
 
@@ -66,6 +77,11 @@ export class StoreController {
   }
 
   @Get('/storeByCep/')
+  @ApiOperation({ summary: 'Busca lojas por CEP' })
+  @ApiQuery({name: 'limit', required: false, type: Number, description: 'Número máximo de lojas a serem retornadas'})
+  @ApiQuery({name: 'offset', required: false, type: Number, description: 'Número de páginas a serem puladas'})
+  @ApiResponse({ status: 200, description: 'Lojas encontradas com sucesso' })
+  @ApiResponse({ status: 404, description: 'Loja não encontrada' })
   async storeByCep(
     @Body('cep') cep: { cep: string },
     @Query('limit') limit: number = 10,
@@ -84,6 +100,12 @@ export class StoreController {
   }
 
   @Get('/storeByState/:state')
+  @ApiOperation({ summary: 'Busca lojas por estado' })
+  @ApiParam({ name: 'state', type: String, description: 'Sigla do estado' })  
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Número máximo de lojas a serem retornadas'})
+  @ApiQuery({name: 'offset', required: false, type: Number, description: 'Número de páginas a serem puladas'})
+  @ApiResponse({ status: 200, description: 'Lojas encontradas com sucesso' })
+  @ApiResponse({ status: 404, description: 'Lojas não encontradas para o estado' })
   async storeByState(
     @Param('state') state: string,
     @Query('limit')limit: number = 10,
@@ -110,16 +132,24 @@ export class StoreController {
   //Endpoints adicionais
 
   @Post('/create')
+  @ApiOperation({ summary: 'Cria uma nova loja' })
+  @ApiResponse({ status: 201, description: 'Loja criada com sucesso', type: Object })
   async createStore(@Body() createStoreDto: CreateStoreDto) {
     return this.storeService.createStore(createStoreDto);
   }
 
   @Post('/createByCep')
+  @ApiOperation({ summary: 'Cria uma nova loja utilizando o CEP' })
+  @ApiResponse({ status: 201, description: 'Loja criada com sucesso', type: Object })
   async createStoreByCep(@Body() createStoreByCepDto: CreateStoreByCepDto) {
     return this.storeService.createStoreByCep(createStoreByCepDto);
   }
 
   @Delete('/delete/:id')
+  @ApiOperation({ summary: 'Deleta uma loja' })
+  @ApiParam({ name: 'id', type: String, description: 'ID da loja a ser deletada' })
+  @ApiResponse({ status: 200, description: 'Loja deletada com sucesso' })
+  @ApiResponse({ status: 404, description: 'Loja não encontrada' })
   async deleteStore(@Param('id') id: string) {
     const store = await this.storeService.deleteStore(id);
 
@@ -131,6 +161,10 @@ export class StoreController {
   }
 
   @Patch('/updateStore/:id')
+  @ApiOperation({ summary: 'Atualiza os dados de uma loja' })
+  @ApiParam({ name: 'id', type: String, description: 'ID da loja a ser atualizada' })
+  @ApiResponse({ status: 200, description: 'Loja atualizada com sucesso' })
+  @ApiResponse({ status: 404, description: 'Loja não encontrada', type: Object })
   async updateStore(
     @Param('id') id: string,
     @Body() updateStoreDto: UpdateStoreDto,
