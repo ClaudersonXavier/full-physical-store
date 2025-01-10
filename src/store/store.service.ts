@@ -3,11 +3,11 @@ import { Store } from './model/store.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateStoreDto } from './dto/createStoreDto';
-import { GoogleApiService } from 'src/utils/googleMapsService';
+import { GoogleApiService } from '../utils/googleMapsService';
 import { CreateStoreByCepDto } from './dto/createStoreByCepDto';
-import { cepInfos } from 'src/utils/viaCepService';
+import { cepInfos } from '../utils/viaCepService';
 import { UpdateStoreDto } from './dto/updateStoreDto';
-import { calculateShipping } from 'src/utils/correiosService';
+import { calculateShipping } from '../utils/correiosService';
 
 @Injectable()
 export class StoreService {
@@ -27,13 +27,13 @@ export class StoreService {
 
   async storeByState(
     state: string,
-    limit: number,
-    offset: number,
+    limit?: number,
+    offset?: number,
   ): Promise<Store[]> {
     return this.storeModel.find({ state: state }).skip(offset).limit(limit);
   }
 
-  async storeByCep(cep: string, limit: number, offset: number) {
+  async storeByCep(cep: string, limit?: number, offset?: number) {
     const userLocation = await GoogleApiService.getCordenates(cep);
 
     const stores = await this.storeModel.find();

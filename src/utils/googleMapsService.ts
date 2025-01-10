@@ -60,7 +60,7 @@ export class GoogleApiService {
 
       const data = await response.json();
 
-      if (!data.results || data.status === 'ZERO_RESULTS') {
+      if (data.status === 'ZERO_RESULTS') {
         throw new Error('Erro ao calcular distância na api do Google');
       }
 

@@ -83,7 +83,7 @@ export class StoreController {
   @ApiResponse({ status: 200, description: 'Lojas encontradas com sucesso' })
   @ApiResponse({ status: 404, description: 'Loja não encontrada' })
   async storeByCep(
-    @Body('cep') cep: { cep: string },
+    @Body() cep: { cep: string },
     @Query('limit') limit: number = 10,
     @Query('offset') offset: number = 0,
   ) {
