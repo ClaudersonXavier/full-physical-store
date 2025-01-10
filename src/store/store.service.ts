@@ -13,8 +13,8 @@ import { calculateShipping } from 'src/utils/correiosService';
 export class StoreService {
   constructor(@InjectModel('Store') private storeModel: Model<Store>) {}
 
-  async listAll(): Promise<Store[]> {
-    return await this.storeModel.find();
+  async listAll(limit?: number, offset?: number): Promise<Store[]> {
+    return await this.storeModel.find().skip(offset).limit(limit);
   }
 
   async storeById(id: string): Promise<Store> {
@@ -25,11 +25,15 @@ export class StoreService {
     return await this.storeModel.findById(id);
   }
 
-  async storeByState(state: string): Promise<Store[]> {
-    return this.storeModel.find({ state: state });
+  async storeByState(
+    state: string,
+    limit: number,
+    offset: number,
+  ): Promise<Store[]> {
+    return this.storeModel.find({ state: state }).skip(offset).limit(limit);
   }
 
-  async storeByCep(cep: string) {
+  async storeByCep(cep: string, limit: number, offset: number) {
     const userLocation = await GoogleApiService.getCordenates(cep);
 
     const stores = await this.storeModel.find();
@@ -95,11 +99,15 @@ export class StoreService {
       return distanceA - distanceB;
     });
 
-    const paginatedStores = nearbyStores.slice(0, 0 + 5);
+    const paginatedStores = nearbyStores.slice(offset, offset + limit);
+
+    if(paginatedStores.length === 0){
+      return { message: 'Offset passou do range, reinforme novamene', status: 'Ok' };
+    }
 
     return {
-      limit: 5,
-      offset: 0,
+      limit,
+      offset,
       total: nearbyStores.length,
       stores: paginatedStores,
       pins,
@@ -201,5 +209,9 @@ export class StoreService {
     }
 
     return updatedStore;
+  }
+
+  async storeStateCount(state: string) {
+    return (await this.storeModel.find({ state: state })).length;
   }
 }
