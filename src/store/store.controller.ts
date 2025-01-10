@@ -32,7 +32,7 @@ export class StoreController {
     @Query('limit') limit: number = 10,
     @Query('offset') offset: number = 0,
   ) {
-    const totalStore = await this.storeService.listAll();
+    const totalStore = await this.storeService.listAll(limit, offset);
     
     if (totalStore.length === 0) {
       return { message: 'Não há lojas cadastradas', status: 'Ok' };

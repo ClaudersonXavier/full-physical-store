@@ -5,14 +5,19 @@ import { Model } from 'mongoose';
 import { Store, StoreSchema } from '../src/store/model/store.schema';
 import { ConfigModule } from '@nestjs/config';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { Console } from 'console';
 
 describe('testes do StoreService', () => {
   let service: StoreService;
   let storeModel: Model<Store>;
   let mongoServer: MongoMemoryServer;
+  let limit = 10
+  let offset = 0
 
   beforeEach(async () => {
-    mongoServer = await MongoMemoryServer.create();
+    mongoServer = await MongoMemoryServer.create({instance: {
+      storageEngine: 'wiredTiger', 
+    }})
     const uri = mongoServer.getUri();
 
     const module: TestingModule = await Test.createTestingModule({
@@ -55,9 +60,9 @@ describe('testes do StoreService', () => {
       "storeID": "122345",
       "storeName": "LOJA B",
       "address1": "Av. Pedro Cavalcante",
-      "city": "Garanhuns",
+      "city": "Caruaru",
       "district": "Heliopolis",
-      "state": "SP",
+      "state": "PE",
       "country": "Brasil",
       "type": "PDV",
       "postalCode": "55012-290",
@@ -84,8 +89,8 @@ describe('testes do StoreService', () => {
   })
 
   it("Achando as lojas pelo estado", async () => {
-    const store = await service.storeByState("PE");  
-    expect(store).toHaveLength(1); 
+    const store = await service.storeByState("PE", limit, offset);  
+    expect(store).toHaveLength(2); 
     expect(store[0].storeName).toEqual("LOJA A");
   })
 
@@ -144,5 +149,46 @@ describe('testes do StoreService', () => {
     expect(store.storeName).toEqual("LOJA BAO");
   })
 
-  
+  it("Achando uma loja pelo CEP (PDV +50, LOJA -50)", async () =>{
+    const stores = await service.storeByCep("55293-290", limit, offset)
+    expect(stores.total).toEqual(1);
+    expect(stores.stores[0].name).toEqual("LOJA A")
+    expect(stores.stores[0].value[0]).toEqual({
+      prazo: '1 dia útil',
+      price: 'R$ 15,00',
+      description: 'Motoboy',
+    })
+  })
+
+  it("Achando uma loja pelo CEP (PDV -50, LOJA +50)", async () =>{
+    const stores = await service.storeByCep("55016-400", limit, offset)
+    expect(stores.total).toEqual(2);
+    expect(stores.stores[0].name).toEqual("LOJA B")
+    expect(stores.stores[0].value[0]).toEqual({
+      prazo: '1 dia útil',
+      price: 'R$ 15,00',
+      description: 'Motoboy',
+    })
+
+    expect(stores.stores[1].name).toEqual("LOJA A")
+    expect(stores.stores[1].value).toEqual({value: 
+    [{
+      "prazo": "3 dias úteis",
+      "codProdutoAgencia": "04014",
+      "preco": "R$ 27,00",
+      "description": "Sedex a encomenda expressa dos Correios"
+     },
+     {
+      "prazo": "7 dias úteis",
+      "codProdutoAgencia": "04510",
+      "preco": "R$ 25,50",
+      "description": "PAC a encomenda economica dos Correios"
+     }
+    ]})
+  })
+
+  afterEach(async () => {
+    await storeModel.deleteMany({});
+    await mongoServer.stop();
+  });
 });

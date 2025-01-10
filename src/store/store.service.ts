@@ -27,13 +27,13 @@ export class StoreService {
 
   async storeByState(
     state: string,
-    limit?: number,
-    offset?: number,
+    limit: number,
+    offset: number,
   ): Promise<Store[]> {
     return this.storeModel.find({ state: state }).skip(offset).limit(limit);
   }
 
-  async storeByCep(cep: string, limit?: number, offset?: number) {
+  async storeByCep(cep: string, limit: number, offset: number) {
     const userLocation = await GoogleApiService.getCordenates(cep);
 
     const stores = await this.storeModel.find();
