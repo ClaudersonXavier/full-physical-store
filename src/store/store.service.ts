@@ -35,13 +35,12 @@ export class StoreService {
 
   async storeByCep(cep: string, limit: number, offset: number) {
     const userLocation = await GoogleApiService.getCordenates(cep);
-
     const stores = await this.storeModel.find();
 
     const nearbyStores = [];
     const pins = [];
 
-    for (const store of stores) {
+    const storePromises = stores.map(async (store) => {
       const distance = await GoogleApiService.distanceCalculator(
         userLocation.latitude,
         userLocation.longitude,
@@ -49,13 +48,25 @@ export class StoreService {
         store.longitude,
       );
 
+      const storeData = {
+        name: store.storeName,
+        city: store.city,
+        postalCode: store.postalCode,
+        type: store.type,
+        distance: `${distance.toFixed(2)} km`,
+      };
+
+      pins.push({
+        position: {
+          lat: store.latitude,
+          lng: store.longitude,
+        },
+        title: store.storeName,
+      });
+
       if (distance <= 50) {
         nearbyStores.push({
-          name: store.storeName,
-          city: store.city,
-          postalCode: store.postalCode,
-          type: store.type,
-          distance: `${distance.toFixed(2)} km`,
+          ...storeData,
           value: [
             {
               prazo: `${this.shippingDeliveryPdv(store)} dia útil`,
@@ -64,34 +75,16 @@ export class StoreService {
             },
           ],
         });
-
-        pins.push({
-          position: {
-            lat: store.latitude,
-            lng: store.longitude,
-          },
-          title: store.storeName,
-        });
-      } else if (store.type === 'LOJA' && distance >= 50) {
+      } else if (store.type === 'LOJA') {
         const correiosResponse = await calculateShipping(cep, store.postalCode);
         nearbyStores.push({
-          name: store.storeName,
-          city: store.city,
-          postalCode: store.postalCode,
-          type: 'LOJA',
-          distance: `${distance.toFixed(2)} km`,
+          ...storeData,
           value: correiosResponse,
         });
-
-        pins.push({
-          position: {
-            lat: store.latitude,
-            lng: store.longitude,
-          },
-          title: store.storeName,
-        });
       }
-    }
+    });
+
+    await Promise.all(storePromises);
 
     nearbyStores.sort((a, b) => {
       const distanceA = parseFloat(a.distance.replace(' km', ''));
@@ -103,7 +96,7 @@ export class StoreService {
 
     if (paginatedStores.length === 0) {
       return {
-        message: 'Offset passou do range, reinforme novamene',
+        message: 'Offset passou do range, reinforme novamente',
         status: 'Ok',
       };
     }
