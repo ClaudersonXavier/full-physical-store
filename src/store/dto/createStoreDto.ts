@@ -9,8 +9,6 @@ import {
 } from 'class-validator';
 
 export class CreateStoreDto {
-
-  
   @IsNumberString()
   storeID: string;
 

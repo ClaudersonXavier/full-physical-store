@@ -12,7 +12,13 @@ import { StoreService } from './store.service';
 import { CreateStoreDto } from './dto/createStoreDto';
 import { CreateStoreByCepDto } from './dto/createStoreByCepDto';
 import { UpdateStoreDto } from './dto/updateStoreDto';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('stores')
 @Controller('store')
@@ -22,25 +28,41 @@ export class StoreController {
   //Endpoits requisitados
 
   @Get('/listAll')
-  @ApiOperation({ summary: 'Lista todas as lojas' })  
-  @ApiQuery({name: 'limit', required: false, type: Number, description: 'Número máximo de lojas a serem retornadas'})
-  @ApiQuery({name: 'offset', required: false, type: Number, description: 'Número de páginas a serem puladas'})
-  @ApiResponse({status: 200, description: 'Lista de lojas retornada com sucesso',})
-  @ApiResponse({status: 404,description: 'Não há lojas cadastradas',})
+  @ApiOperation({ summary: 'Lista todas as lojas' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Número máximo de lojas a serem retornadas',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Número de páginas a serem puladas',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de lojas retornada com sucesso',
+  })
+  @ApiResponse({ status: 404, description: 'Não há lojas cadastradas' })
   async listALL(
     @Query('limit') limit: number = 10,
     @Query('offset') offset: number = 0,
   ) {
     const totalStore = await this.storeService.listAll(limit, offset);
-    
+
     if (totalStore.length === 0) {
       return { message: 'Não há lojas cadastradas', status: 'Ok' };
     }
 
     const stores = await this.storeService.listAll(limit, offset);
 
-    if(stores.length === 0){
-      return { message: 'Offset passou do range, reinforme novamene', status: 'Ok' };
+    if (stores.length === 0) {
+      return {
+        message: 'Offset passou do range, reinforme novamene',
+        status: 'Ok',
+      };
     }
 
     const response = {
@@ -55,7 +77,12 @@ export class StoreController {
 
   @Get('/storeById/:id')
   @ApiOperation({ summary: 'Busca uma loja por ID' })
-  @ApiParam({ name: 'id', type: String, description: 'ID da loja, tanto o dado pelo usuário como o do banco de dados funcionam' }) 
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description:
+      'ID da loja, tanto o dado pelo usuário como o do banco de dados funcionam',
+  })
   @ApiResponse({ status: 200, description: 'Loja encontrada com sucesso' })
   @ApiResponse({ status: 404, description: 'Loja não encontrada' })
   async storeById(@Param('id') id: string) {
@@ -77,8 +104,18 @@ export class StoreController {
 
   @Get('/storeByCep/')
   @ApiOperation({ summary: 'Busca lojas por CEP' })
-  @ApiQuery({name: 'limit', required: false, type: Number, description: 'Número máximo de lojas a serem retornadas'})
-  @ApiQuery({name: 'offset', required: false, type: Number, description: 'Número de páginas a serem puladas'})
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Número máximo de lojas a serem retornadas',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Número de páginas a serem puladas',
+  })
   @ApiResponse({ status: 200, description: 'Lojas encontradas com sucesso' })
   @ApiResponse({ status: 404, description: 'Loja não encontrada' })
   async storeByCep(
@@ -86,13 +123,12 @@ export class StoreController {
     @Query('limit') limit: number = 10,
     @Query('offset') offset: number = 0,
   ) {
-
     const totalStore = await this.storeService.listAll();
-    
+
     if (totalStore.length === 0) {
       return { message: 'Não há lojas cadastradas', status: 'Ok' };
     }
-    
+
     const stores = await this.storeService.storeByCep(cep.cep, limit, offset);
 
     return stores;
@@ -100,14 +136,27 @@ export class StoreController {
 
   @Get('/storeByState/:state')
   @ApiOperation({ summary: 'Busca lojas por estado' })
-  @ApiParam({ name: 'state', type: String, description: 'Sigla do estado' })  
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Número máximo de lojas a serem retornadas'})
-  @ApiQuery({name: 'offset', required: false, type: Number, description: 'Número de páginas a serem puladas'})
+  @ApiParam({ name: 'state', type: String, description: 'Sigla do estado' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Número máximo de lojas a serem retornadas',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Número de páginas a serem puladas',
+  })
   @ApiResponse({ status: 200, description: 'Lojas encontradas com sucesso' })
-  @ApiResponse({ status: 404, description: 'Lojas não encontradas para o estado' })
+  @ApiResponse({
+    status: 404,
+    description: 'Lojas não encontradas para o estado',
+  })
   async storeByState(
     @Param('state') state: string,
-    @Query('limit')limit: number = 10,
+    @Query('limit') limit: number = 10,
     @Query('offset') offset: number = 0,
   ) {
     const stores = await this.storeService.storeByState(state, limit, offset);
@@ -132,21 +181,33 @@ export class StoreController {
 
   @Post('/create')
   @ApiOperation({ summary: 'Cria uma nova loja' })
-  @ApiResponse({ status: 201, description: 'Loja criada com sucesso', type: Object })
+  @ApiResponse({
+    status: 201,
+    description: 'Loja criada com sucesso',
+    type: Object,
+  })
   async createStore(@Body() createStoreDto: CreateStoreDto) {
     return this.storeService.createStore(createStoreDto);
   }
 
   @Post('/createByCep')
   @ApiOperation({ summary: 'Cria uma nova loja utilizando o CEP' })
-  @ApiResponse({ status: 201, description: 'Loja criada com sucesso', type: Object })
+  @ApiResponse({
+    status: 201,
+    description: 'Loja criada com sucesso',
+    type: Object,
+  })
   async createStoreByCep(@Body() createStoreByCepDto: CreateStoreByCepDto) {
     return this.storeService.createStoreByCep(createStoreByCepDto);
   }
 
   @Delete('/delete/:id')
   @ApiOperation({ summary: 'Deleta uma loja' })
-  @ApiParam({ name: 'id', type: String, description: 'ID da loja a ser deletada' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'ID da loja a ser deletada',
+  })
   @ApiResponse({ status: 200, description: 'Loja deletada com sucesso' })
   @ApiResponse({ status: 404, description: 'Loja não encontrada' })
   async deleteStore(@Param('id') id: string) {
@@ -161,9 +222,17 @@ export class StoreController {
 
   @Patch('/updateStore/:id')
   @ApiOperation({ summary: 'Atualiza os dados de uma loja' })
-  @ApiParam({ name: 'id', type: String, description: 'ID da loja a ser atualizada' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'ID da loja a ser atualizada',
+  })
   @ApiResponse({ status: 200, description: 'Loja atualizada com sucesso' })
-  @ApiResponse({ status: 404, description: 'Loja não encontrada', type: Object })
+  @ApiResponse({
+    status: 404,
+    description: 'Loja não encontrada',
+    type: Object,
+  })
   async updateStore(
     @Param('id') id: string,
     @Body() updateStoreDto: UpdateStoreDto,

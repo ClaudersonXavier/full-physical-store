@@ -1,25 +1,27 @@
-import { Model } from "mongoose";
-import { StoreService } from "../src/store/store.service";
-import { Store, StoreSchema } from "../src/store/model/store.schema";
-import { MongoMemoryServer } from "mongodb-memory-server";
-import { Test, TestingModule } from "@nestjs/testing";
-import { ConfigModule } from "@nestjs/config";
-import { getModelToken, MongooseModule } from "@nestjs/mongoose";
-import { StoreController } from "../src/store/store.controller";
-import { response } from "express";
+import { Model } from 'mongoose';
+import { StoreService } from '../src/store/store.service';
+import { Store, StoreSchema } from '../src/store/model/store.schema';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import { getModelToken, MongooseModule } from '@nestjs/mongoose';
+import { StoreController } from '../src/store/store.controller';
+import { response } from 'express';
 
 describe('testes as rotas e suas respostas do StoreController', () => {
   let service: StoreService;
-  let controller: StoreController
+  let controller: StoreController;
   let storeModel: Model<Store>;
   let mongoServer: MongoMemoryServer;
-  let limit = 10
-  let offset = 0
+  let limit = 10;
+  let offset = 0;
 
   beforeEach(async () => {
-    mongoServer = await MongoMemoryServer.create({instance: {
-      storageEngine: 'wiredTiger', 
-    }})
+    mongoServer = await MongoMemoryServer.create({
+      instance: {
+        storageEngine: 'wiredTiger',
+      },
+    });
     const uri = mongoServer.getUri();
 
     const module: TestingModule = await Test.createTestingModule({
@@ -33,55 +35,64 @@ describe('testes as rotas e suas respostas do StoreController', () => {
           },
         ]),
       ],
-      providers: [
-        StoreService,
-        StoreController
-      ],
+      providers: [StoreService, StoreController],
     }).compile();
 
     service = module.get<StoreService>(StoreService);
-    controller = module.get<StoreController>(StoreController)
+    controller = module.get<StoreController>(StoreController);
     storeModel = module.get<Model<Store>>(getModelToken('Store'));
-
-
   });
 
   it('Verificando se está definido', () => {
-    expect(controller).toBeDefined();  
+    expect(controller).toBeDefined();
   });
 
-  it('Verificando resposta quando não há loja', async () =>{
-    const store = await controller.listALL(limit, offset)
+  it('Verificando resposta quando não há loja', async () => {
+    const store = await controller.listALL(limit, offset);
 
-    expect(store).toEqual({ message: 'Não há lojas cadastradas', status: 'Ok' })
-  })
+    expect(store).toEqual({
+      message: 'Não há lojas cadastradas',
+      status: 'Ok',
+    });
+  });
 
-  it('Verificando resposta quando não há loja com o id buscado', async () =>{
-    const store = await controller.storeById('122345')
+  it('Verificando resposta quando não há loja com o id buscado', async () => {
+    const store = await controller.storeById('122345');
 
-    expect(store).toEqual({ message: 'Não há local com esse id.', status: 'Ok' })
-  })
+    expect(store).toEqual({
+      message: 'Não há local com esse id.',
+      status: 'Ok',
+    });
+  });
 
-  it('Verificando resposta quando não há loja no estado selecionado', async () =>{
-    const store = await controller.storeByState('AC')
+  it('Verificando resposta quando não há loja no estado selecionado', async () => {
+    const store = await controller.storeByState('AC');
 
-    expect(store).toEqual({ message: 'Não há locais presentes nesse estado.', status: 'Ok' })
-  })
+    expect(store).toEqual({
+      message: 'Não há locais presentes nesse estado.',
+      status: 'Ok',
+    });
+  });
 
-  it('Verificando resposta quando tenta deletar uma loja com um id inexistente', async () =>{
-    const store = await controller.deleteStore('122345')
+  it('Verificando resposta quando tenta deletar uma loja com um id inexistente', async () => {
+    const store = await controller.deleteStore('122345');
 
-    expect(store).toEqual({ message: 'Não há local com esse id.', status: 'Ok' })
-  })
+    expect(store).toEqual({
+      message: 'Não há local com esse id.',
+      status: 'Ok',
+    });
+  });
 
-  it('Verificando resposta quando tenta editar uma loja com um id inexistente', async () =>{
-    const store = await controller.updateStore('122345',{storeName: 'LOJA C'})
+  it('Verificando resposta quando tenta editar uma loja com um id inexistente', async () => {
+    const store = await controller.updateStore('122345', {
+      storeName: 'LOJA C',
+    });
 
-    expect(store).toEqual({ message: 'Não há local com esse id.', status: 'Ok' })
-  })
-
-  
-  
+    expect(store).toEqual({
+      message: 'Não há local com esse id.',
+      status: 'Ok',
+    });
+  });
 
   afterEach(async () => {
     await storeModel.deleteMany({});

@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNumber,
@@ -9,7 +8,6 @@ import {
 } from 'class-validator';
 
 export class CreateStoreByCepDto {
-  
   @IsString()
   storeID: string;
 
