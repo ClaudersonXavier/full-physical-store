@@ -78,14 +78,10 @@ export class Store {
   })
   postalCode: string;
 
-  @Prop({
-    required: [true, 'O local deve informar seu número.'],
-  })
+  @Prop()
   telephoneNumber: string;
 
-  @Prop({
-    required: [true, 'O local deve informar seu email.'],
-  })
+  @Prop({})
   emailAddress: string;
 }
 
