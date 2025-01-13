@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -113,7 +112,7 @@ export class StoreController {
   ) {
     const stores = await this.storeService.storeByState(state, limit, offset);
 
-    if (!stores) {
+    if (!stores.length) {
       return { message: 'Não há locais presentes nesse estado.', status: 'Ok' };
     }
 
@@ -169,9 +168,9 @@ export class StoreController {
     @Param('id') id: string,
     @Body() updateStoreDto: UpdateStoreDto,
   ) {
-    const store = this.storeService.updateStore(id, updateStoreDto);
+    const store = await this.storeService.updateStore(id, updateStoreDto);
 
-    if (!store) {
+    if (!store || store == null) {
       return { message: 'Não há local com esse id.', status: 'Ok' };
     }
     return store;

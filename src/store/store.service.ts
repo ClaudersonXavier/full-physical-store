@@ -157,6 +157,9 @@ export class StoreService {
 
   async updateStore(id: string, updateStoreDto: UpdateStoreDto) {
     if (!isNaN(Number(id))) {
+      if((await this.storeModel.find({storeID: id})).length == 0){
+        return null
+      }
       const updatedStore = await this.storeModel.findOneAndUpdate(
         { storeID: id },
         updateStoreDto,
@@ -180,10 +183,12 @@ export class StoreService {
         updatedStore.latitude = coordenates.latitude;
         updatedStore.longitude = coordenates.longitude;
       }
-
       return updatedStore;
     }
-
+    
+    if(await this.storeModel.findById(id) == null){
+      return null
+    }
     const updatedStore = await this.storeModel.findByIdAndUpdate(
       id,
       updateStoreDto,
