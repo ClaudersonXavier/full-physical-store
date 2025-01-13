@@ -19,7 +19,7 @@ export class Store {
   @Prop({ default: true }) // considerar que sempre tem o produto
   takeOutInStore: boolean;
 
-  @Prop()
+  @Prop({ default: 0, min: 0 }) // Por padrão vai ser 0
   shippingTimeInDays: number;
 
   @Prop()

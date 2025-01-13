@@ -58,7 +58,7 @@ export class StoreService {
           distance: `${distance.toFixed(2)} km`,
           value: [
             {
-              prazo: '1 dia útil',
+              prazo: `${this.shippingDeliveryPdv(store)} dia útil`,
               price: 'R$ 15,00',
               description: 'Motoboy',
             },
@@ -101,8 +101,11 @@ export class StoreService {
 
     const paginatedStores = nearbyStores.slice(offset, offset + limit);
 
-    if(paginatedStores.length === 0){
-      return { message: 'Offset passou do range, reinforme novamene', status: 'Ok' };
+    if (paginatedStores.length === 0) {
+      return {
+        message: 'Offset passou do range, reinforme novamene',
+        status: 'Ok',
+      };
     }
 
     return {
@@ -157,8 +160,8 @@ export class StoreService {
 
   async updateStore(id: string, updateStoreDto: UpdateStoreDto) {
     if (!isNaN(Number(id))) {
-      if((await this.storeModel.find({storeID: id})).length == 0){
-        return null
+      if ((await this.storeModel.find({ storeID: id })).length == 0) {
+        return null;
       }
       const updatedStore = await this.storeModel.findOneAndUpdate(
         { storeID: id },
@@ -185,9 +188,9 @@ export class StoreService {
       }
       return updatedStore;
     }
-    
-    if(await this.storeModel.findById(id) == null){
-      return null
+
+    if ((await this.storeModel.findById(id)) == null) {
+      return null;
     }
     const updatedStore = await this.storeModel.findByIdAndUpdate(
       id,
@@ -218,5 +221,10 @@ export class StoreService {
 
   async storeStateCount(state: string) {
     return (await this.storeModel.find({ state: state })).length;
+  }
+
+  shippingDeliveryPdv(store: Store): number {
+    // 1 é o padrão
+    return 1 + store.shippingTimeInDays;
   }
 }
