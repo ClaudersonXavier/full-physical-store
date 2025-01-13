@@ -6,15 +6,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { StoreController } from '../src/store/store.controller';
-import { response } from 'express';
 
 describe('testes as rotas e suas respostas do StoreController', () => {
-  let service: StoreService;
   let controller: StoreController;
   let storeModel: Model<Store>;
   let mongoServer: MongoMemoryServer;
-  let limit = 10;
-  let offset = 0;
+  const limit = 10;
+  const offset = 0;
 
   beforeEach(async () => {
     mongoServer = await MongoMemoryServer.create({
@@ -38,7 +36,6 @@ describe('testes as rotas e suas respostas do StoreController', () => {
       providers: [StoreService, StoreController],
     }).compile();
 
-    service = module.get<StoreService>(StoreService);
     controller = module.get<StoreController>(StoreController);
     storeModel = module.get<Model<Store>>(getModelToken('Store'));
   });

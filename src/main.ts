@@ -15,13 +15,7 @@ async function bootstrap() {
     .addTag('stores')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config, {
-    extraModels: [],
-  });
-
-  if (document.components) {
-    delete document.components.schemas;
-  }
+  const document = SwaggerModule.createDocument(app, config);
 
   SwaggerModule.setup('api', app, document);
 

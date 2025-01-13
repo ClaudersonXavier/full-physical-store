@@ -10,8 +10,8 @@ describe('testes do StoreService', () => {
   let service: StoreService;
   let storeModel: Model<Store>;
   let mongoServer: MongoMemoryServer;
-  let limit = 10;
-  let offset = 0;
+  const limit = 10;
+  const offset = 0;
 
   beforeEach(async () => {
     mongoServer = await MongoMemoryServer.create({
@@ -88,7 +88,7 @@ describe('testes do StoreService', () => {
   });
 
   it('Achando as lojas pelo estado', async () => {
-    const store = await service.createStore({
+    await service.createStore({
       storeID: '631213',
       storeName: 'LOJA D',
       address1: 'Av. Pedro Cavalcante',
@@ -110,7 +110,7 @@ describe('testes do StoreService', () => {
   });
 
   it('Criando uma loja', async () => {
-    const store = await service.createStore({
+    await service.createStore({
       storeID: '631213',
       storeName: 'LOJA D',
       address1: 'Av. Pedro Cavalcante',
@@ -133,7 +133,7 @@ describe('testes do StoreService', () => {
   });
 
   it('Criando uma loja pelo CEP', async () => {
-    const store = await service.createStoreByCep({
+    await service.createStoreByCep({
       storeID: '413123',
       storeName: 'LOJA D',
       type: 'PDV',
@@ -305,7 +305,7 @@ describe('testes do StoreService', () => {
   });
 
   it('Achando uma loja pelo CEP (LOJA -50 e PDV -50)', async () => {
-    const store = await service.createStoreByCep({
+    await service.createStoreByCep({
       storeID: '413123',
       storeName: 'LOJA C',
       type: 'PDV',
@@ -335,7 +335,7 @@ describe('testes do StoreService', () => {
   it('Teste com o cep requisitado', async () => {
     service.deleteStore('761239'); //Apagando a do tipo loja para melhor analise
 
-    const store = await service.createStoreByCep({
+    await service.createStoreByCep({
       storeID: '413123',
       storeName: 'LOJA C',
       type: 'PDV',
@@ -359,7 +359,7 @@ describe('testes do StoreService', () => {
   it('Teste com o shippingTimeInDays diferente', async () => {
     service.deleteStore('761239'); //Apagando a do tipo loja para melhor analise
 
-    const store = await service.createStoreByCep({
+    await service.createStoreByCep({
       storeID: '413123',
       storeName: 'LOJA C',
       type: 'PDV',
